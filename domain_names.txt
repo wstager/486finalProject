@@ -15,6 +15,6 @@ Conservative:
 Neutral:
   PBS: https://www.pbs.org/newshour/politics -- keeps in beginning of url
   ABC News: http://abcnews.go.com/Politics -- keeps in beginning of url
-  CBS: https://www.cbsnews.com/politics/
-  USA Today: https://www.usatoday.com/news/politics/
-  Bloomberg: https://www.bloomberg.com/politics
+  CBS: https://www.cbsnews.com -- no politics in url
+  USA Today: https://www.usatoday.com/ - keeps "news/politics/" in so look for that
+  Bloomberg: https://www.bloomberg.com - no politics in url
