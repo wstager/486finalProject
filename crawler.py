@@ -15,11 +15,7 @@ def parseText(text):
     print(text)
 
 def crawl(url, num_links, output, site_name, score, politics_flag):
-    visited = set()
-    q = queue.Queue()
-    q.put(url)
     count = 0
-    visited.add(url)
     paper = newspaper.build(url, memoize_articles=False)
     print(url)
     for article in paper.articles:
@@ -27,10 +23,10 @@ def crawl(url, num_links, output, site_name, score, politics_flag):
             continue
         if count>num_links:
             break
-            count+=1
-            article.download()
-            article.parse()
-            parseText(article.text)
+        count+=1
+        article.download()
+        article.parse()
+        parseText(article.text)
 
 if __name__ == '__main__':
     assert(len(sys.argv) >= 2)
