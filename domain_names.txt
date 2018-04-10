@@ -1,20 +1,20 @@
 Liberal:
   MSNBC: http://www.msnbc.com/elections
-  Huffington Post: https://www.huffingtonpost.com/section/politics
-  CNN: https://www.cnn.com/politics
-  New York Times: https://www.nytimes.com/section/politics
+  Huffington Post: https://www.huffingtonpost.com -- no politics in url
+  CNN: https://www.cnn.com -  keeps politics in so look for politics in url
+  New York Times: https://www.nytimes.com - keeps politics in so look for politics in url
   Politico: https://www.politico.com/
   
 Conservative:
   The Hill: http://thehill.com/
-  The Washington Times: https://www.washingtontimes.com/news/politics/
-  Fox: http://www.foxnews.com/politics.html
+  The Washington Times: https://www.washingtontimes.com -- no politics in url
+  Fox: http://www.foxnews.com/politics -- keeps in beginning of url
   Drudge Report: http://www.drudgereport.com/
-  Breitbart: http://www.breitbart.com/big-government/
+  Breitbart: http://www.breitbart.com/big-government/ -- keeps in beginning of url
   
 Neutral:
-  PBS: https://www.pbs.org/newshour/politics
-  ABC News: http://abcnews.go.com/Politics
+  PBS: https://www.pbs.org/newshour/politics -- keeps in beginning of url
+  ABC News: http://abcnews.go.com/Politics -- keeps in beginning of url
   CBS: https://www.cbsnews.com/politics/
   USA Today: https://www.usatoday.com/news/politics/
   Bloomberg: https://www.bloomberg.com/politics
