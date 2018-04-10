@@ -11,8 +11,16 @@ import newspaper
 
 
 
-def parseText(text):
-    print(text)
+def parseText(text, politics_flag, site_name, score):
+    if not politics_flag:
+        if site_name == "HuffingtonPost":
+
+        else if site_name == "WashingtonTimes":
+
+        else if site_name == "Bloomberg":
+
+        else if site_name == "CBS":
+
 
 def crawl(url, num_links, output, site_name, score, politics_flag):
     count = 0
@@ -26,7 +34,7 @@ def crawl(url, num_links, output, site_name, score, politics_flag):
         count+=1
         article.download()
         article.parse()
-        parseText(article.text)
+        parseText(article.text, politics_flag, site_name, score)
 
 if __name__ == '__main__':
     assert(len(sys.argv) >= 2)
