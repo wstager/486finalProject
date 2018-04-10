@@ -11,7 +11,9 @@ import newspaper
 
 
 
-def parseText(text, politics_flag, site_name, score):
+def parseText(article, politics_flag, site_name, score):
+    article.download()
+    article.parse()
     if not politics_flag:
         if site_name == "HuffingtonPost":
 
@@ -32,9 +34,7 @@ def crawl(url, num_links, output, site_name, score, politics_flag):
         if count>num_links:
             break
         count+=1
-        article.download()
-        article.parse()
-        parseText(article.text, politics_flag, site_name, score)
+        parseText(article, politics_flag, site_name, score)
 
 if __name__ == '__main__':
     assert(len(sys.argv) >= 2)
