@@ -3,20 +3,21 @@ import importlib
 import copy
 import os
 import re
-import Queue
+import queue
 from lxml import html
-import urlparse
+import urllib.parse
 import requests
+from newspaper import Article
 
 
 def crawl(url, num_links, output):
     visited = set()
-    q = Queue.Queue()
+    q = queue.Queue()
     q.put(url)
     count = 0
     visited.add(url)
     #grabs domain from given url
-    allowed_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse.urlparse(url))
+    allowed_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urllib.parse.urlparse(url))
     with open('crawler.output.edges', 'w') as edge_output:
         while (not q.empty()) and (count < num_links):
             url = q.get()
@@ -35,9 +36,9 @@ def crawl(url, num_links, output):
                         link = link[2]
                         #append relative URLs to parent URL
                         if link.startswith("/"):
-                            link = urlparse.urljoin(allowed_domain,link)
+                            link = urllib.parse.urljoin(allowed_domain,link)
                         #pulls domain from link to make sure it matches target domain
-                        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse.urlparse(link))
+                        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urllib.parse.urlparse(link))
                         #remove trailing / for consistancy
                         link = link.rstrip('/')
                         #make sure domain matches original URL
