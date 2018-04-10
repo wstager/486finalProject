@@ -4,14 +4,14 @@ Liberal:
   CNN: https://www.cnn.com -  keeps politics in so look for politics in url
   New York Times: https://www.nytimes.com - keeps politics in so look for politics in url
   Politico: https://www.politico.com/
-  
+
 Conservative:
   The Hill: http://thehill.com/
   The Washington Times: https://www.washingtontimes.com -- no politics in url
   Fox: http://www.foxnews.com/politics -- keeps in beginning of url
   Drudge Report: http://www.drudgereport.com/
   Breitbart: http://www.breitbart.com/big-government/ -- keeps in beginning of url
-  
+
 Neutral:
   PBS: https://www.pbs.org/newshour/politics -- keeps in beginning of url
   ABC News: http://abcnews.go.com/Politics -- keeps in beginning of url
