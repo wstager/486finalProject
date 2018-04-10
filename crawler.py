@@ -11,30 +11,31 @@ import newspaper
 
 
 
-def parseText(article, politics_flag, site_name, score):
-    article.download()
-    article.parse()
-    if not politics_flag:
-        if site_name == "HuffingtonPost":
-
-        else if site_name == "WashingtonTimes":
-
-        else if site_name == "Bloomberg":
-
-        else if site_name == "CBS":
+def parseText(article, site_name, score):
+    try:
+        if site_name == "Breitbart":
+            if "big-government" not in aritlce.url:
+                print(article.url)
+                return -1
+        article.download()
+        article.parse()
+        return 0
+    except:
+        return -1
 
 
 def crawl(url, num_links, output, site_name, score, politics_flag):
     count = 0
     paper = newspaper.build(url, memoize_articles=False)
     print(url)
+    print(paper.size())
     for article in paper.articles:
         if politics_flag and "politics" not in article.url:
             continue
         if count>num_links:
             break
         count+=1
-        parseText(article, politics_flag, site_name, score)
+        count += parseText(article, site_name, score)
 
 if __name__ == '__main__':
     assert(len(sys.argv) >= 2)
