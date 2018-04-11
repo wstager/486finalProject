@@ -54,9 +54,6 @@ def crawl(url, num_links, output, site_name, score, politics_flag):
     #         break
     #     count+=1
     #     count += parseText(article, site_name, score)
-    print(site_name)
-    print(url)
-    print("________________________________________________________")
     par_url = urlparse(url)
     org_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=par_url)
     url_dict = set()
@@ -106,23 +103,20 @@ def crawl(url, num_links, output, site_name, score, politics_flag):
                             frontier.append(p_url)
                             added += 1
                             url_dict.add(p_url)
-                            print(p_url)
-    print("Added: {}".format(added))
-    print("\n")
+                            print("{}\t{}\t{}".format(p_url, site_name, score))
 
 
 if __name__ == '__main__':
     assert(len(sys.argv) >= 2)
     file_path = sys.argv[1]
     num_links = int(sys.argv[2])
-    with open('crawler.output', 'w') as output:
-        with open(file_path, 'r') as curr_file:
-            urls = [line.rstrip('\n') for line in curr_file]
-            for url in urls:
-                url = url.split('\t')
-                site_name = url[1]
-                score = url[2]
-                politics_flag = False
-                if url[3] == "yes":
-                    politics_flag = True
-                crawl(url[0], num_links, output, site_name, score, politics_flag)
+    with open(file_path, 'r') as curr_file:
+        urls = [line.rstrip('\n') for line in curr_file]
+        for url in urls:
+            url = url.split('\t')
+            site_name = url[1]
+            score = url[2]
+            politics_flag = False
+            if url[3] == "yes":
+                politics_flag = True
+            crawl(url[0], num_links, output, site_name, score, politics_flag)
