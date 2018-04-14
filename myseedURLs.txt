@@ -1,5 +1,4 @@
 http://www.cnn.com	CNN	3	yes
-http://www.msnbc.com	MSNBC	2	no
 http://www.nytimes.com	NYT	3	yes
 http://www.politico.com/	Politico	3	no
 http://thehill.com/	TheHill	5	no
