@@ -182,8 +182,8 @@ def word_analysis(all_words, threshold, f_adj_file, m_adj_file):
 			total_occ += all_words[word][Gender.MALE]
 		if Gender.FEMALE in all_words[word]:
 			total_occ += all_words[word][Gender.FEMALE]
-		if Gender.NONE in all_words[word]:
-			total_occ += all_words[word][Gender.NONE]
+		# if Gender.NONE in all_words[word]:
+		# 	total_occ += all_words[word][Gender.NONE]
 		all_words[word]["total"] = total_occ
 		if total_occ < threshold:
 			continue
