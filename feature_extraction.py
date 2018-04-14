@@ -43,8 +43,8 @@ def process_doc(url, all_words):
 	sentence_list_female = []
 	sentence_list_male = []
 	sentence_list_none = []
-	female_sent = []
-	male_sent = []
+	female_sent = 0
+	male_sent = 0
 	for sent in sents:
 		sentence_sent = getSentiment(sent)
 		tokens = word_tokenize(sent)
@@ -67,14 +67,17 @@ def process_doc(url, all_words):
 		
 		if gender == Gender.MALE:
 			sentence_list_male.append(sentence_dict)
-			male_sent.append(sentence_sent)
+			male_sent += sentence_sent
 		elif gender == Gender.FEMALE:
 			sentence_list_female.append(sentence_dict)
-			female_sent.append(sentence_sent)
+			female_sent += sentence_sent
 		else:
 			sentence_list_none.append(sentence_dict)
 	if not sentence_list_female and not sentence_list_male:
 		return -1
+
+    male_sent = float(male_sent) / float(len(sentence_list_male))
+    female_sent = float(female_sent) / float(len(sentence_list_female))
 
 	feature_dict = {"url": url, "title": article.title, "text_male": sentence_list_male, "text_female": sentence_list_female, 
 	                "text_none": sentence_list_none, "doc_sent": doc_sent, "female_sent": female_sent, "male_sent": male_sent}
