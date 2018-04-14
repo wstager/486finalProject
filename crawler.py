@@ -42,7 +42,7 @@ def parseText(article, site_name, score):
         return -1
 
 
-def crawl(url, num_links, output, site_name, score, politics_flag):
+def crawl(url, num_links, site_name, score, politics_flag):
     # count = 0
     # paper = newspaper.build(url, memoize_articles=False)
     # print(url)
@@ -119,4 +119,4 @@ if __name__ == '__main__':
             politics_flag = False
             if url[3] == "yes":
                 politics_flag = True
-            crawl(url[0], num_links, output, site_name, score, politics_flag)
+            crawl(url[0], num_links, site_name, score, politics_flag)
