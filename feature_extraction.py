@@ -211,7 +211,7 @@ def print_site_dict(site_dict):
 				site_file.write("URL\tdoc_gender\tdoc_sent\tfemale_sent\tmale_sent\t")
 				for i in range(0,3):
 					for key in LIWC_CATG:
-						site_file.write(str(i)+"_"+str(key)+"\t")
+						site_file.write(str(i)+"_"+str(key)+"\t\n")
 				for feature_dict in s_dict["doc_list"]:
 					site_file.write(feature_dict["url"]+"\t"+str(feature_dict["gender"])+"\t"+
 						            str(feature_dict["doc_sent"])+"\t"+str(feature_dict["female_sent"])+"\t"+str(feature_dict["male_sent"])+"\t")
@@ -227,6 +227,7 @@ def print_site_dict(site_dict):
 					adj_site_file.write("female"+"\t"+feature_dict["url"]+"\n")
 					for adj, count in feature_dict["female_ADJ"].items():
 						adj_site_file.write(str(adj)+"\t"+str(count)+"\n")
+                    sit_file.write("\n")
 	
 def main():	
 	file_path = sys.argv[1]
