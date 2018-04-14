@@ -227,7 +227,7 @@ def print_site_dict(site_dict):
 					adj_site_file.write("female"+"\t"+feature_dict["url"]+"\n")
 					for adj, count in feature_dict["female_ADJ"].items():
 						adj_site_file.write(str(adj)+"\t"+str(count)+"\n")
-                    sit_file.write("\n")
+					site_file.write("\n")
 	
 def main():	
 	file_path = sys.argv[1]
