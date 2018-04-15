@@ -175,6 +175,11 @@ def get_sentence_gender(tokens):
 		male = True
 	if any (word in tokens for word in FEMALE_PRONOUN):
 		female = True
+	name_gender = get_people(tokens)
+	if name_gender == Gender.FEMALE:
+		female = True
+	elif name_gender == Gender.MALE:
+		male = True
 	if male and female:
 		return Gender.NONE
 	if male:	
@@ -216,7 +221,7 @@ def word_analysis(all_words, threshold, f_adj_file, m_adj_file, class_counts):
 			prob = probs[Gender.FEMALE][word]
 			f_f.write("{}\t{}\t{}\t{}\n".format(word, prob, value,word_count))
 	with open(m_adj_file, 'w+') as f_m:
-		f_m.write("Word\tCond_Prob\tCount\n")
+		f_m.write("Word\tCond_Prob\tNorm_Prob\tCount\n")
 		for word, value in sorted_male:
 			word_count = all_words[word]["total"]
 			prob = probs[Gender.MALE][word]
