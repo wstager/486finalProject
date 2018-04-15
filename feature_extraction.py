@@ -76,8 +76,10 @@ def process_doc(url, all_words):
 	if not sentence_list_female and not sentence_list_male:
 		return -1
 
-    male_sent = float(male_sent) / float(len(sentence_list_male))
-    female_sent = float(female_sent) / float(len(sentence_list_female))
+	if sentence_list_male:
+		male_sent = float(male_sent) / float(len(sentence_list_male))
+	if sentence_list_female:
+		female_sent = float(female_sent) / float(len(sentence_list_female))
 
 	feature_dict = {"url": url, "title": article.title, "text_male": sentence_list_male, "text_female": sentence_list_female, 
 	                "text_none": sentence_list_none, "doc_sent": doc_sent, "female_sent": female_sent, "male_sent": male_sent}
