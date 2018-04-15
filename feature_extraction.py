@@ -10,6 +10,8 @@ from newspaper import Article
 from enum import Enum
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from copy import deepcopy
+import math
 
 MEN = ["ryan", "bill clinton", "sanders", "sessions", "mueller", "mccain", "pence", "biden", "booker", "cohen"]
 WOMEN = ["hillary clinton", "devos", "michelle obama", "pelosi", "conway", "ivanka", "palin", "walters", "warren", "fiorina", "swisher"]
@@ -27,7 +29,7 @@ class Gender(Enum):
 	FEMALE = 2
 	NONE = 3
 
-def process_doc(url, all_words):
+def process_doc(url, all_words, class_counts):
 	try:
 		article = Article(url)
 		article.download()
@@ -50,6 +52,8 @@ def process_doc(url, all_words):
 		tokens = word_tokenize(sent)
 		sentence_dict = {}
 		gender = get_sentence_gender(tokens)
+		if gender != Gender.NONE:
+			class_counts[gender]+=1
 		for token in tokens:
 			pos = nltk.pos_tag([token])
 			if not "JJ" in pos[0][1]:
@@ -179,7 +183,7 @@ def get_sentence_gender(tokens):
 		return Gender.FEMALE
 	return Gender.NONE
 
-def word_analysis(all_words, threshold, f_adj_file, m_adj_file):
+def word_analysis(all_words, threshold, f_adj_file, m_adj_file, class_counts):
 	probs = {Gender.MALE: {}, Gender.FEMALE: {}}
 	for word in all_words:
 		total_occ = 0
@@ -196,18 +200,27 @@ def word_analysis(all_words, threshold, f_adj_file, m_adj_file):
 			probs[Gender.MALE][word] = float(all_words[word][Gender.MALE]/total_occ)
 		if Gender.FEMALE in all_words[word]:
 			probs[Gender.FEMALE][word] = float(all_words[word][Gender.FEMALE]/total_occ)
-	sorted_female = sorted(probs[Gender.FEMALE].items(), key=lambda x:x[1], reverse=True)
-	sorted_male = sorted(probs[Gender.MALE].items(), key=lambda x:x[1], reverse=True)
+	normal_probs = deepcopy(probs)
+	male_prob = float(class_counts[Gender.MALE])/float(class_counts[Gender.MALE] + class_counts[Gender.FEMALE])
+	female_prob = float(class_counts[Gender.FEMALE])/float(class_counts[Gender.MALE] + class_counts[Gender.FEMALE])
+	for word, prob  in normal_probs[Gender.MALE].items():
+		normal_probs[Gender.MALE][word] = math.log(float(normal_probs[Gender.MALE][word])/float(male_prob))
+	for word, prob  in normal_probs[Gender.FEMALE].items():
+		normal_probs[Gender.FEMALE][word] = math.log(float(normal_probs[Gender.FEMALE][word])/float(female_prob))
+	sorted_female = sorted(normal_probs[Gender.FEMALE].items(), key=lambda x:x[1], reverse=True)
+	sorted_male = sorted(normal_probs[Gender.MALE].items(), key=lambda x:x[1], reverse=True)
 	with open(f_adj_file, 'w+') as f_f:
-		f_f.write("Word\tCond_Prob\tCount\n")
+		f_f.write("Word\tCond_Prob\tNorm_Prob\tCount\n")
 		for word, value in sorted_female:
 			word_count = all_words[word]["total"]
-			f_f.write("{}\t{}\t{}\n".format(word, value, word_count))
+			prob = probs[Gender.FEMALE][word]
+			f_f.write("{}\t{}\t{}\t{}\n".format(word, prob, value,word_count))
 	with open(m_adj_file, 'w+') as f_m:
 		f_m.write("Word\tCond_Prob\tCount\n")
 		for word, value in sorted_male:
 			word_count = all_words[word]["total"]
-			f_m.write("{}\t{}\t{}\n".format(word, value, word_count))
+			prob = probs[Gender.MALE][word]
+			f_m.write("{}\t{}\t{}\t{}\n".format(word, prob, value, word_count))
 
 def print_site_dict(site_dict):
 	for site_name, s_dict in site_dict.items():
@@ -215,6 +228,7 @@ def print_site_dict(site_dict):
 			with open("ADJ_{}.txt".format(site_name), 'w+') as adj_site_file:
 				site_file.write("0_URL\t1_doc_gender\t2_doc_sent\t3_female_sent\t4_male_sent\t")
 				count = 5
+				sorted_LIWC = sorted(LIWC_CATG)
 				for i in range(0,3):
 					for key in LIWC_CATG:
 						site_file.write(str(count)+"_"+str(i)+"_"+str(key)+"\t")
@@ -223,12 +237,12 @@ def print_site_dict(site_dict):
 				for feature_dict in s_dict["doc_list"]:
 					site_file.write(feature_dict["url"]+"\t"+str(feature_dict["gender"])+"\t"+
 						            str(feature_dict["doc_sent"])+"\t"+str(feature_dict["female_sent"])+"\t"+str(feature_dict["male_sent"])+"\t")
-					for LIWC_key, value in feature_dict["female_LIWC"].items():
-						site_file.write(str(value)+"\t")
-					for LIWC_key, value in feature_dict["male_LIWC"].items():
-						site_file.write(str(value)+"\t")
-					for LIWC_key, value in feature_dict["none_LIWC"].items():
-						site_file.write(str(value)+"\t")
+					for LIWC_key in sorted_LIWC:
+						site_file.write(str(feature_dict["female_LIWC"][LIWC_key])+"\t")
+					for LIWC_key in sorted_LIWC:
+						site_file.write(str(feature_dict["male_LIWC"][LIWC_key])+"\t")
+					for LIWC_key in sorted_LIWC:
+						site_file.write(str(feature_dict["none_LIWC"][LIWC_key])+"\t")
 					adj_site_file.write("male"+"\t"+feature_dict["url"]+"\n")
 					for adj, count in feature_dict["male_ADJ"].items():
 						adj_site_file.write(str(adj)+"\t"+str(count)+"\n")
@@ -242,6 +256,7 @@ def main():
 	read_liwc()
 	site_dict = {}
 	all_words = {}
+	class_counts = {Gender.MALE: 0, Gender.FEMALE: 0}
 	with open(file_path, 'r') as curr_file:
 		urls = [line.rstrip('\n') for line in curr_file]
 		for u in urls:
@@ -249,7 +264,7 @@ def main():
 			url = u[0]
 			site_name = u[1]
 			score = u[2]
-			feature_dict = process_doc(url, all_words)
+			feature_dict = process_doc(url, all_words, class_counts)
 			if feature_dict == -1:
 				continue
 			if site_name in site_dict:
@@ -257,7 +272,7 @@ def main():
 			else:
 				site_dict[site_name] = {"score": score, "doc_list": [feature_dict]}
 	LIWC_analysis(site_dict)
-	word_analysis(all_words, 10, "female_adj.txt", "male_adj.txt")
+	word_analysis(all_words, 10, "female_adj.txt", "male_adj.txt", class_counts)
 	print_site_dict(site_dict)
 	
 
