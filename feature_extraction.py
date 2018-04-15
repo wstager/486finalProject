@@ -229,8 +229,8 @@ def word_analysis(all_words, threshold, f_adj_file, m_adj_file, class_counts):
 
 def print_site_dict(site_dict):
 	for site_name, s_dict in site_dict.items():
-		with open("feat_{}.txt".format(site_name), 'w+') as site_file:
-			with open("ADJ_{}.txt".format(site_name), 'w+') as adj_site_file:
+		with open("feat_files/feat_{}.txt".format(site_name), 'w+') as site_file:
+			with open("adj_files/ADJ_{}.txt".format(site_name), 'w+') as adj_site_file:
 				site_file.write("0_URL\t1_doc_gender\t2_doc_sent\t3_female_sent\t4_male_sent\t")
 				count = 5
 				sorted_LIWC = sorted(LIWC_CATG)
@@ -277,7 +277,7 @@ def main():
 			else:
 				site_dict[site_name] = {"score": score, "doc_list": [feature_dict]}
 	LIWC_analysis(site_dict)
-	word_analysis(all_words, 10, "female_adj.txt", "male_adj.txt", class_counts)
+	word_analysis(all_words, 10, "adj_files/female_adj.txt", "adj_files/male_adj.txt", class_counts)
 	print_site_dict(site_dict)
 	
 
