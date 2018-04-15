@@ -213,10 +213,13 @@ def print_site_dict(site_dict):
 	for site_name, s_dict in site_dict.items():
 		with open("feat_{}.txt".format(site_name), 'w+') as site_file:
 			with open("ADJ_{}.txt".format(site_name), 'w+') as adj_site_file:
-				site_file.write("URL\tdoc_gender\tdoc_sent\tfemale_sent\tmale_sent\t")
+				site_file.write("0_URL\t1_doc_gender\t2_doc_sent\t3_female_sent\t4_male_sent\t")
+				count = 5
 				for i in range(0,3):
 					for key in LIWC_CATG:
-						site_file.write(str(i)+"_"+str(key)+"\t\n")
+						site_file.write(str(count)+"_"+str(i)+"_"+str(key)+"\t")
+						count+=1
+				site_file.write("\n")
 				for feature_dict in s_dict["doc_list"]:
 					site_file.write(feature_dict["url"]+"\t"+str(feature_dict["gender"])+"\t"+
 						            str(feature_dict["doc_sent"])+"\t"+str(feature_dict["female_sent"])+"\t"+str(feature_dict["male_sent"])+"\t")
