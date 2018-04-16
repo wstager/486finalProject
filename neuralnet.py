@@ -210,6 +210,7 @@ def test_NN(h_size):
             test_Y[row] = all_Y[t_index]
             row += 1
         accuracy, prec_lib, prec_n, prec_con, recall_lib, recall_n, recall_con = train_NN(h_size, train_X, train_Y, test_X, test_Y)
+        print("accuracy {} \n liberal precision {} \n liberal recall {} \n average conservative precision {} \n average conservative recall {} \n average neutral precision {} \n average neutral recall {}".format(accuracy, prec_lib, recall_lib, prec_con, recall_con, prec_n, recall_n))
         average_accuracy+=accuracy
         average_lib_prec+=prec_lib
         average_lib_rec+=recall_lib
@@ -266,7 +267,7 @@ def train_NN(h_size, train_X, train_y, test_X, test_y):
     best_recall_n = 0
     best_recall_con = 0
 
-    for epoch in range(200):
+    for epoch in range(100):
         # Train with each example
         for i in range(len(train_X)):
             sess.run(updates, feed_dict={X: train_X[i: i + 1], y: train_y[i: i + 1]})
@@ -304,7 +305,7 @@ def calc_pr(test_y, test_run):
             golden_y[y_row] = 1
         elif test_y[y_row][2]:
             golden_y[y_row] = 2
-            
+
     count = 0
     for val in golden_y:
         #liberal
