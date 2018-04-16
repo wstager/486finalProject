@@ -186,6 +186,12 @@ def test_NN(h_size):
     test_X = ""
     test_Y = ""
     average_accuracy = 0
+    average_lib_prec = 0
+    average_lib_rec = 0
+    average_con_prec = 0
+    average_con_rec = 0
+    average_n_prec = 0
+    average_n_rec = 0
     for train_indices, test_indices in skf.split(all_X, y):
         num_train_rows = len(train_indices)
         num_test_rows = len(test_indices)
@@ -203,9 +209,26 @@ def test_NN(h_size):
             test_X[row] = all_X[t_index]
             test_Y[row] = all_Y[t_index]
             row += 1
-        average_accuracy += train_NN(h_size, train_X, train_Y, test_X, test_Y)
+        accuracy, prec_lib, prec_n, prec_con, recall_lib, recall_n, recall_con = train_NN(h_size, train_X, train_Y, test_X, test_Y)
+        average_accuracy+=accuracy
+        average_lib_prec+=prec_lib
+        average_lib_rec+=recall_lib
+        average_con_prec+=prec_con
+        average_con_rec+=recall_con
+        average_n_prec+=prec_n
+        average_n_rec+=recall_n
+
     average_accuracy = float(average_accuracy) / float(4)
-    print("average accuracy {}".format(average_accuracy))
+
+    average_lib_prec = float(average_lib_prec) / float(4)
+    average_con_prec = float(average_con_prec) / float(4)
+    average_n_prec = float(average_n_prec) / float(4)
+
+    average_lib_rec = float(average_lib_rec) / float(4)
+    average_con_rec = float(average_con_rec) / float(4)
+    average_n_rec = float(average_n_rec) / float(4)
+
+    print("average accuracy {} \n average liberal precision {} \n average liberal recall {} \n average conservative precision {} \n average conservative recall {} \n average neutral precision {} \n average neutral recall {}".format(average_accuracy, average_lib_prec, average_lib_rec, average_con_prec, average_con_rec, average_n_prec, average_n_rec))
         
 
 def train_NN(h_size, train_X, train_y, test_X, test_y):
@@ -236,6 +259,12 @@ def train_NN(h_size, train_X, train_y, test_X, test_y):
     sess.run(init)
 
     best_test_accuracy = 0
+    best_prec_lib = 0
+    best_prec_n = 0
+    best_prec_con = 0
+    best_recall_lib = 0
+    best_recall_n = 0
+    best_recall_con = 0
 
     for epoch in range(200):
         # Train with each example
@@ -250,25 +279,87 @@ def train_NN(h_size, train_X, train_y, test_X, test_y):
         test_run = sess.run(predict, feed_dict={X: test_X, y: test_y})
         test_accuracy  = np.mean(np.argmax(test_y, axis=1) ==
                                  test_run)
-        
-        # tp_lib, tp_con, tp_n = 0, 0, 0
-        # fp_lib, fp_con, fp_n = 0, 0, 0
-        # fn_lib, fn_con, fn_n = 0, 0, 0
-
-
-        
-
-        # print("test_y ground truth ", test_y)
-        # print("test_y predictions ", test_run)
 
         if test_accuracy > best_test_accuracy:
             best_test_accuracy = test_accuracy
+            best_prec_lib, best_prec_n, best_prec_con, best_recall_lib, best_recall_n, best_recall_con = calc_pr(test_y, test_run)
 
         print("Epoch = %d, train accuracy = %.2f%%, test accuracy = %.2f%%"
               % (epoch + 1, 100. * train_accuracy, 100. * test_accuracy))
 
     sess.close()
-    return best_test_accuracy
+    return best_test_accuracy, best_prec_lib, best_prec_n, best_prec_con, best_recall_lib, best_recall_n, best_recall_con
+
+def calc_pr(test_y, test_run):
+    tp_lib, tp_con, tp_n = 0, 0, 0
+    fp_lib, fp_con, fp_n = 0, 0, 0
+    fn_lib, fn_con, fn_n = 0, 0, 0
+
+    golden_y = np.zeros(len(test_y))
+
+    for y_row in range(0, len(test_y)):
+        if test_y[y_row][0]:
+            golden_y[y_row] = 0
+        elif test_y[y_row][1]:
+            golden_y[y_row] = 1
+        elif test_y[y_row][2]:
+            golden_y[y_row] = 2
+            
+    count = 0
+    for val in golden_y:
+        #liberal
+        if int(val) == 0 and test_run[count] == 0:
+            tp_lib += 1
+        elif int(val) == 0:
+            fn_lib += 1
+        elif test_run[count] == 0:
+            fp_lib += 1
+        #neutral
+        if int(val) == 1 and test_run[count] == 1:
+            tp_n += 1
+        elif int(val) == 0:
+            fn_n += 1
+        elif test_run[count] == 0:
+            fp_n += 1
+        #conservative
+        if int(val) == 2 and test_run[count] == 2:
+            tp_con += 1
+        elif int(val) == 2:
+            fn_con += 1
+        elif test_run[count] == 2:
+            fp_con += 1
+        count+=1
+
+    if fp_lib == 0 and tp_lib == 0:
+        best_prec_lib = 1
+    else:
+        best_prec_lib = float(tp_lib)/float(tp_lib+fp_lib)
+    if tp_n == 0 and fp_n == 0:
+        best_prec_n = 1
+    else:
+        best_prec_n = float(tp_n)/float(tp_n+fp_n)
+
+    if tp_con == 0 and fp_con == 0:
+        best_prec_con = 1
+    else:
+        best_prec_con = float(tp_con)/float(tp_con+fp_con)
+
+    if tp_lib == 0 and fn_lib == 0:
+        best_recall_lib = 1
+    else:
+        best_recall_lib = float(tp_lib)/float(tp_lib+fn_lib)
+
+    if fn_n == 0 and tp_n == 0:
+        best_recall_n = 1
+    else:
+        best_recall_n = float(tp_n)/float(tp_n+fn_n)
+
+    if fn_con == 0 and tp_con == 0:
+        best_recall_con = 1
+    else:
+        best_recall_con = float(tp_con)/float(tp_con+fn_con)
+
+    return best_prec_lib, best_prec_n, best_prec_con, best_recall_lib, best_recall_n, best_recall_con
 
 def main():
     h_size = int(float(sys.argv[1])) # number of hidden nodes
