@@ -180,7 +180,7 @@ def test_NN(h_size):
         elif all_Y[y_row][2]:
             y[y_row] = 2
 
-    skf = StratifiedKFold(n_splits=1)
+    skf = StratifiedKFold(n_splits=4)
     train_X = ""
     train_Y = ""
     test_X = ""
