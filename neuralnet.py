@@ -37,7 +37,7 @@ def get_iris_data():
     N, M  = data.shape
     all_X = np.ones((N, M + 1))
     all_X[:, 1:] = data
-    
+
     #print("all X: ", all_X)
 
     # Convert into one-hot vectors
@@ -137,7 +137,7 @@ def get_data():
             feature_lists = feature_lists[1:]
             num_rows = len(feature_lists)
             num_columns = len(feature_lists[0].strip().split('\t')) - 3
-            num_columns += num_top_adjectives * 2 #change if we 
+            num_columns += num_top_adjectives * 2 #change if we
             if first:
                 all_X = np.ones((num_rows, num_columns + 1))
                 all_Y = np.zeros((num_rows, 3)) # liberal, neutral, conservative
@@ -180,7 +180,7 @@ def test_NN(h_size):
         elif all_Y[y_row][2]:
             y[y_row] = 2
 
-    skf = StratifiedKFold(n_splits=4)
+    skf = StratifiedKFold(n_splits=1)
     train_X = ""
     train_Y = ""
     test_X = ""
@@ -230,7 +230,7 @@ def test_NN(h_size):
     average_n_rec = float(average_n_rec) / float(4)
 
     print("average accuracy {} \n average liberal precision {} \n average liberal recall {} \n average conservative precision {} \n average conservative recall {} \n average neutral precision {} \n average neutral recall {}".format(average_accuracy, average_lib_prec, average_lib_rec, average_con_prec, average_con_rec, average_n_prec, average_n_rec))
-        
+
 
 def train_NN(h_size, train_X, train_y, test_X, test_y):
 
@@ -366,9 +366,6 @@ def main():
     h_size = int(float(sys.argv[1])) # number of hidden nodes
     test_NN(h_size)
 
-    
+
 if __name__ == '__main__':
     main()
-
-
-
