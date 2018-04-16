@@ -127,7 +127,7 @@ def get_data():
     all_Y = ""
     first = True
     row = 0
-    num_top_adjectives = 20
+    num_top_adjectives = 40
     ftop_adjs, mtop_adjs = get_top_adjectives(num_top_adjectives)
     for filename in os.listdir("feat_files"):
         sitename = filename.split('_')[1][:-4]
@@ -148,7 +148,7 @@ def get_data():
             for feature_list in feature_lists:
                 feature_list = feature_list.strip().split('\t')
                 f_num = 0
-                url = feature_list[0]
+                url = feature_list[0].strip()
                 for feature in feature_list[3:]:
                     all_X[row, f_num] = float(feature)
                     f_num += 1
@@ -243,20 +243,23 @@ def train_NN(h_size, train_X, train_y, test_X, test_y):
             sess.run(updates, feed_dict={X: train_X[i: i + 1], y: train_y[i: i + 1]})
 
         train_run = sess.run(predict, feed_dict={X: train_X, y: train_y})
-        print("train_y ground truth ", train_y)
-        print("train_y predictions ", train_run)
+        #print("train_y ground truth ", train_y)
+        #print("train_y predictions ", train_run)
         train_accuracy = np.mean(np.argmax(train_y, axis=1) ==
                                  train_run)
         test_run = sess.run(predict, feed_dict={X: test_X, y: test_y})
         test_accuracy  = np.mean(np.argmax(test_y, axis=1) ==
                                  test_run)
-        tp_lib, tp_con, tp_n = 0, 0, 0
-        fp_lib, fp_con, fp_n = 0, 0, 0
-        fn_lib, fn_con, fn_n = 0, 0, 0
+        
+        # tp_lib, tp_con, tp_n = 0, 0, 0
+        # fp_lib, fp_con, fp_n = 0, 0, 0
+        # fn_lib, fn_con, fn_n = 0, 0, 0
+
+
         
 
-        print("test_y ground truth ", test_y)
-        print("test_y predictions ", test_run)
+        # print("test_y ground truth ", test_y)
+        # print("test_y predictions ", test_run)
 
         if test_accuracy > best_test_accuracy:
             best_test_accuracy = test_accuracy
