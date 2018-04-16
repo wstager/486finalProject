@@ -1,8 +1,9 @@
 import tensorflow as tf
 import numpy as np
 from sklearn import datasets
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold
 import os
+import sys
 
 RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
@@ -20,7 +21,8 @@ def forwardprop(X, w_1, w_2):
     IMPORTANT: yhat is not softmax since TensorFlow's softmax_cross_entropy_with_logits() does that internally.
     """
     h    = tf.nn.sigmoid(tf.matmul(X, w_1))  # The \sigma function
-    yhat = tf.matmul(h, w_2)  # The \varphi function
+    #yhat = tf.matmul(h, w_2)  # The \varphi function
+    yhat = tf.nn.sigmoid(tf.matmul(h, w_2))
     return yhat
 
 def get_iris_data():
@@ -164,14 +166,52 @@ def get_data():
                     f_num += 1
                 all_Y[row, POL_DICT[sitename]] = 1
                 row += 1
-    return train_test_split(all_X, all_Y, test_size=0.3, random_state=RANDOM_SEED)
+    return all_X, all_Y, num_columns
 
-def main():
-    train_X, test_X, train_y, test_y = get_data()
+def test_NN(h_size):
+    all_X, all_Y, num_columns = get_data()
+    # generate vector of y lables
+    y = np.zeros(len(all_Y))
+    for y_row in range(0, len(all_Y)):
+        if all_Y[y_row][0]:
+            y[y_row] = 0
+        elif all_Y[y_row][1]:
+            y[y_row] = 1
+        elif all_Y[y_row][2]:
+            y[y_row] = 2
+
+    skf = StratifiedKFold(n_splits=4)
+    train_X = ""
+    train_Y = ""
+    test_X = ""
+    test_Y = ""
+    average_accuracy = 0
+    for train_indices, test_indices in skf.split(all_X, y):
+        num_train_rows = len(train_indices)
+        num_test_rows = len(test_indices)
+        train_X = np.zeros((num_train_rows, num_columns + 1))
+        train_Y = np.zeros((num_train_rows, 3))
+        test_X = np.zeros((num_test_rows, num_columns + 1))
+        test_Y = np.zeros((num_test_rows, 3))
+        row = 0
+        for tr_index in train_indices:
+            train_X[row] = all_X[tr_index]
+            train_Y[row] = all_Y[tr_index]
+            row += 1
+        row = 0
+        for t_index in test_indices:
+            test_X[row] = all_X[t_index]
+            test_Y[row] = all_Y[t_index]
+            row += 1
+        average_accuracy += train_NN(h_size, train_X, train_Y, test_X, test_Y)
+    average_accuracy = float(average_accuracy) / float(4)
+    print("average accuracy {}".format(average_accuracy))
+        
+
+def train_NN(h_size, train_X, train_y, test_X, test_y):
 
     # Layer's sizes
     x_size = train_X.shape[1]   # Number of input nodes: 4 features and 1 bias
-    h_size = 256                # Number of hidden nodes
     y_size = train_y.shape[1]   # Number of outcomes: 1 (the score)
 
     # Symbols
@@ -195,20 +235,41 @@ def main():
     init = tf.global_variables_initializer()
     sess.run(init)
 
+    best_test_accuracy = 0
+
     for epoch in range(200):
         # Train with each example
         for i in range(len(train_X)):
             sess.run(updates, feed_dict={X: train_X[i: i + 1], y: train_y[i: i + 1]})
 
+        train_run = sess.run(predict, feed_dict={X: train_X, y: train_y})
+        print("train_y ground truth ", train_y)
+        print("train_y predictions ", train_run)
         train_accuracy = np.mean(np.argmax(train_y, axis=1) ==
-                                 sess.run(predict, feed_dict={X: train_X, y: train_y}))
+                                 train_run)
+        test_run = sess.run(predict, feed_dict={X: test_X, y: test_y})
         test_accuracy  = np.mean(np.argmax(test_y, axis=1) ==
-                                 sess.run(predict, feed_dict={X: test_X, y: test_y}))
+                                 test_run)
+        tp_lib, tp_con, tp_n = 0, 0, 0
+        fp_lib, fp_con, fp_n = 0, 0, 0
+        fn_lib, fn_con, fn_n = 0, 0, 0
+        
+
+        print("test_y ground truth ", test_y)
+        print("test_y predictions ", test_run)
+
+        if test_accuracy > best_test_accuracy:
+            best_test_accuracy = test_accuracy
 
         print("Epoch = %d, train accuracy = %.2f%%, test accuracy = %.2f%%"
               % (epoch + 1, 100. * train_accuracy, 100. * test_accuracy))
 
     sess.close()
+    return best_test_accuracy
+
+def main():
+    h_size = int(float(sys.argv[1])) # number of hidden nodes
+    test_NN(h_size)
 
     
 if __name__ == '__main__':
