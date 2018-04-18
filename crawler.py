@@ -16,6 +16,12 @@ BAD_EXTENSIONS = ['.pdf', '.png', '.jpeg', '.js', '.doc', '.docx', '.gif']
 B_KEYWORDS = ['govern', 'conservative', 'senat', 'politic', 'election', 'congress', 'republic', 'democra', 'liberal', 'nation']
 
 def normalize_url(url_source, potential_url):
+    '''
+    Returns a normalized url
+    Input:
+        url_source : the url currently being crawled
+        potential_url: a url found within the url_source html which may be crawled later
+    '''
     # if relative, make absolute
     if potential_url[:4] != 'http':
         potential_url = urljoin(url_source, potential_url)
