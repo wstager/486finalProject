@@ -16,6 +16,12 @@ BAD_EXTENSIONS = ['.pdf', '.png', '.jpeg', '.js', '.doc', '.docx', '.gif']
 B_KEYWORDS = ['govern', 'conservative', 'senat', 'politic', 'election', 'congress', 'republic', 'democra', 'liberal', 'nation']
 
 def normalize_url(url_source, potential_url):
+    '''
+    Returns a normalized url
+    Input:
+        url_source : the url currently being crawled
+        potential_url: a url found within the url_source html which may be crawled later
+    '''
     # if relative, make absolute
     if potential_url[:4] != 'http':
         potential_url = urljoin(url_source, potential_url)
@@ -30,6 +36,16 @@ def normalize_url(url_source, potential_url):
 
 
 def crawl(url, num_links, site_name, score, politics_flag):
+    '''
+    Prints a list of politics-specific URLs for a single domain
+    Input:
+        url : the starting url for a site, usually the home url (i.e http://cnn.com)
+        num_links : the maximum number of urls to crawl
+        site_name : a nickname for the site for printing purposes
+        score : the political "score" for the site for printing purposes
+        politics_flag: boolean value which determines whether to check the URL
+            for specific terms before crawling
+    '''
     par_url = urlparse(url)
     org_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=par_url)
     #set to keep track of visited urls
