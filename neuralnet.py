@@ -10,59 +10,35 @@ tf.set_random_seed(RANDOM_SEED)
 
 POL_DICT = {"CNN": 0, "NYT": 0, "Politico": 0, "OccupyDemocrats": 0, "Slate": 0,
             "ABC": 1, "PBS": 1, "USAToday": 1, "NBCNews": 1, "TheHill": 2, "FoxNews": 2, "Breitbart": 2, "Reason": 2, "WashingtonExaminer": 2}
+
 def init_weights(shape):
-    """ Weight initialization """
+    """ 
+    Weight initialization
+    INPUT: (row size, column size) tuple
+    OUTPUT: a TensorFlow variable that maintains the state of the neural net weight values
+    """
     weights = tf.random_normal(shape, stddev=0.1)
     return tf.Variable(weights)
 
 def forwardprop(X, w_1, w_2):
     """
     Forward-propagation.
-    IMPORTANT: yhat is not softmax since TensorFlow's softmax_cross_entropy_with_logits() does that internally.
+    INPUT: X, an input data matrix
+           w_1, weights for connections between input layer and hidden layer
+           w_2, weights for connections between hiden layer and output layer
+    OUTPUT: an array of prediction values for each political category
     """
-    h    = tf.nn.sigmoid(tf.matmul(X, w_1))  # The \sigma function
-    #yhat = tf.matmul(h, w_2)  # The \varphi function
+    h    = tf.nn.sigmoid(tf.matmul(X, w_1))
     yhat = tf.nn.sigmoid(tf.matmul(h, w_2))
     return yhat
 
-def test_get_data():
-    with open("feat_NYT.txt", 'r') as inputfile:
-        feature_lists = [line.rstrip('\n') for line in inputfile]
-        feature_lists = feature_lists[1:]
-        num_rows = len(feature_lists)
-        num_columns = 6
-        all_X = np.ones((num_rows, num_columns + 1))
-        all_Y = np.zeros((num_rows, 3)) # liberal, neutral, conservative
-        row = 0
-        for feature_list in feature_lists:
-            feature_list = feature_list.split('\t')
-            all_X[row, 1] = float(feature_list[3]) #female sent
-            all_X[row, 2] = float(feature_list[4]) #male sent
-            all_X[row, 3] = float(feature_list[8]) #affect female
-            all_X[row, 4] = float(feature_list[81]) #affect male
-            all_X[row, 5] = float(feature_list[35]) #sexual female
-            all_X[row, 6] = float(feature_list[108]) #sexula male
-            all_Y[row, 0] = 1
-            row += 1
-        with open("feat_FoxNews.txt", 'r') as inputfile:
-            feature_lists = [line.rstrip('\n') for line in inputfile]
-            feature_lists = feature_lists[1:]
-            num_rows = len(feature_lists)
-            all_X = np.concatenate((all_X, np.ones((num_rows, num_columns + 1))), axis=0)
-            all_Y = np.concatenate((all_Y, np.zeros((num_rows, 3))), axis=0)
-            for feature_list in feature_lists:
-                feature_list = feature_list.split('\t')
-                all_X[row, 1] = float(feature_list[3]) #female sent
-                all_X[row, 2] = float(feature_list[4]) #male sent
-                all_X[row, 3] = float(feature_list[8]) #affect female
-                all_X[row, 4] = float(feature_list[81]) #affect male
-                all_X[row, 5] = float(feature_list[35]) #sexual female
-                all_X[row, 6] = float(feature_list[108]) #sexula male
-                all_Y[row, 2] = 1
-                row += 1
-        return train_test_split(all_X, all_Y, test_size=0.3, random_state=RANDOM_SEED)
-
 def get_top_adjectives(num_adj):
+    """
+    Derives lists of the most meaningful ajectives towards identifying the gender of a sentence
+    INPUT: num_adj, number of adjectives to record for both the female and male lists
+    OUTPUT: female_list, a list of the adjectives that were most informative of the female gender
+            male_list, a list of the adjectives that wer most informative of the male gender
+    """
     female_list = []
     male_list = []
     with open("adj_files/female_adj.txt") as female_file:
@@ -76,6 +52,12 @@ def get_top_adjectives(num_adj):
     return female_list, male_list
 
 def get_site_adjectives(sitename):
+    """
+    Computes counts of the informative adjectives seen in each article in the given news site.
+    INPUT: sitename, the name of the site to compute the adjective feature values for
+    OUTPUT: male_adj_dict, a dictionary mapping from url name to dictionary with informative adjectives as keys and counts as values
+            female_adj_dict, a dictionary mapping from url name to dictionary with informative adjectives as keys and counts as values
+    """
     male_adj_dict = {}
     female_adj_dict = {}
     current_url = ""
@@ -102,6 +84,12 @@ def get_site_adjectives(sitename):
 
 
 def get_data():
+    """
+    Creates feature and label matrices for each url in our data set
+    OUTPUT: all_X, matrix that has a row of feature values for each article
+            all_Y, matrix that has a row of values indicating the label of the article (e.g. [1, 0, 0] for liberal)
+            num_columns, the number of features used for each article
+    """
     all_X = ""
     all_Y = ""
     first = True
@@ -148,6 +136,12 @@ def get_data():
     return all_X, all_Y, num_columns
 
 def test_NN(h_size):
+    """
+    Trains and tests the neural network on 4 different folds of the dataset.
+    Prints accuracy, precision, and recall for each test of a different split of the data.
+    Also prints average values for each of the above metrics across the four tests.
+    INPUT: h_size, the number of nodes to include in the hidden layer of the neural net
+    """
     all_X, all_Y, num_columns = get_data()
     # generate vector of y lables
     y = np.zeros(len(all_Y))
@@ -189,7 +183,7 @@ def test_NN(h_size):
             test_Y[row] = all_Y[t_index]
             row += 1
         accuracy, prec_lib, prec_n, prec_con, recall_lib, recall_n, recall_con = train_NN(h_size, train_X, train_Y, test_X, test_Y)
-        print("accuracy {} \n liberal precision {} \n liberal recall {} \n average conservative precision {} \n average conservative recall {} \n average neutral precision {} \n average neutral recall {}".format(accuracy, prec_lib, recall_lib, prec_con, recall_con, prec_n, recall_n))
+        print("accuracy {} \n liberal precision {} \n liberal recall {} \n conservative precision {} \n conservative recall {} \n neutral precision {} \n neutral recall {}".format(accuracy, prec_lib, recall_lib, prec_con, recall_con, prec_n, recall_n))
         average_accuracy+=accuracy
         average_lib_prec+=prec_lib
         average_lib_rec+=recall_lib
@@ -212,10 +206,17 @@ def test_NN(h_size):
 
 
 def train_NN(h_size, train_X, train_y, test_X, test_y):
-
+    """
+    Trains the neural network on the training data set and tests on the input test set
+    INPUT: h_size, the number of nodes to include in the hidden layer of the neural net
+           train_X, a matrix with the feature values for each article in the training set
+           train_y, a matrix with the label values for each article in the training set
+           test_X, a matrix with the feature values for each article in the test set
+           test_y, a matrix with the label values for each article in the test set
+    """
     # Layer's sizes
-    x_size = train_X.shape[1]   # Number of input nodes: 4 features and 1 bias
-    y_size = train_y.shape[1]   # Number of outcomes: 1 (the score)
+    x_size = train_X.shape[1]   # Number of input nodes: 262 features and 1 bias
+    y_size = train_y.shape[1]   # Number of outcomes: 3 (liberal, neutral, conservative)
 
     # Symbols
     X = tf.placeholder("float", shape=[None, x_size])
@@ -252,8 +253,7 @@ def train_NN(h_size, train_X, train_y, test_X, test_y):
             sess.run(updates, feed_dict={X: train_X[i: i + 1], y: train_y[i: i + 1]})
 
         train_run = sess.run(predict, feed_dict={X: train_X, y: train_y})
-        #print("train_y ground truth ", train_y)
-        #print("train_y predictions ", train_run)
+
         train_accuracy = np.mean(np.argmax(train_y, axis=1) ==
                                  train_run)
         test_run = sess.run(predict, feed_dict={X: test_X, y: test_y})
@@ -271,6 +271,17 @@ def train_NN(h_size, train_X, train_y, test_X, test_y):
     return best_test_accuracy, best_prec_lib, best_prec_n, best_prec_con, best_recall_lib, best_recall_n, best_recall_con
 
 def calc_pr(test_y, test_run):
+    """
+    Calculates precision and recall values for each political category
+    INPUT: test_y, a matrix with the ground truth label values for each article in the test set
+           test_run, an array of the predicted categories (0: liberal, 1: neutral, 2: conservative) for each test article
+    OUTPUT: prec_lib, precision value for liberal category
+            prec_n, precision value for neutral category
+            prec_con, precision value for conservative category
+            recall_lib, recall value for liberal category
+            recall_n, recall value for neutral category
+            recall_con, recall value for conservative category
+    """
     tp_lib, tp_con, tp_n = 0, 0, 0
     fp_lib, fp_con, fp_n = 0, 0, 0
     fn_lib, fn_con, fn_n = 0, 0, 0
@@ -311,35 +322,35 @@ def calc_pr(test_y, test_run):
         count+=1
 
     if fp_lib == 0 and tp_lib == 0:
-        best_prec_lib = 1
+        prec_lib = 1
     else:
-        best_prec_lib = float(tp_lib)/float(tp_lib+fp_lib)
+        prec_lib = float(tp_lib)/float(tp_lib+fp_lib)
     if tp_n == 0 and fp_n == 0:
-        best_prec_n = 1
+        prec_n = 1
     else:
-        best_prec_n = float(tp_n)/float(tp_n+fp_n)
+        prec_n = float(tp_n)/float(tp_n+fp_n)
 
     if tp_con == 0 and fp_con == 0:
-        best_prec_con = 1
+        prec_con = 1
     else:
-        best_prec_con = float(tp_con)/float(tp_con+fp_con)
+        prec_con = float(tp_con)/float(tp_con+fp_con)
 
     if tp_lib == 0 and fn_lib == 0:
-        best_recall_lib = 1
+        recall_lib = 1
     else:
-        best_recall_lib = float(tp_lib)/float(tp_lib+fn_lib)
+        recall_lib = float(tp_lib)/float(tp_lib+fn_lib)
 
     if fn_n == 0 and tp_n == 0:
-        best_recall_n = 1
+        recall_n = 1
     else:
-        best_recall_n = float(tp_n)/float(tp_n+fn_n)
+        recall_n = float(tp_n)/float(tp_n+fn_n)
 
     if fn_con == 0 and tp_con == 0:
-        best_recall_con = 1
+        recall_con = 1
     else:
-        best_recall_con = float(tp_con)/float(tp_con+fn_con)
+        recall_con = float(tp_con)/float(tp_con+fn_con)
 
-    return best_prec_lib, best_prec_n, best_prec_con, best_recall_lib, best_recall_n, best_recall_con
+    return prec_lib, prec_n, prec_con, recall_lib, recall_n, recall_con
 
 def main():
     h_size = int(float(sys.argv[1])) # number of hidden nodes
