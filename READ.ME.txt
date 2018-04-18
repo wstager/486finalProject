@@ -11,8 +11,8 @@ To get the rest of the necessary libraries, open Python and type the following:
 PROJECT COMPONENTS
 
 crawler.py
-Description:
-Inputs:
+Description: Given a list of starting urls, crawls through each site to extract a given number politics-specific urls
+Inputs: A list of starting urls, a maximum number of urls to crawl per site
 Outputs: Prints extracted urls to standard output. Pipe them to a file to use them in future steps.
 Command to run: python crawler.py <seed URL file> <number of URLS> > <crawler output file>
 Example: python crawler.py myseedURLs.txt 1500 > crawler_output.txt
@@ -53,7 +53,3 @@ feat_files/feat_<news site name>.txt: Contains a list of all article urls analyz
 Each line contains a url and the then each of the feature values that we computed, all of which are tab separated.
 The title line of this file contains the names of each feature value we recorded, in the form <feat number>_<gender number>_<feature name>.
 Gender number is 0 for female and 1 for male.
-
-
-
-
