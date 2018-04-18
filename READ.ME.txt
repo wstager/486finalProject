@@ -1,0 +1,34 @@
+PROJECT DEPENDENCIES
+To run the project on CAEN, first make sure that Anaconda with Python version 3.6.4 is installed
+
+To get the rest of the necessary libraries, open Python and type the following:
+1. import nltk
+2. nltk.download('averaged_perceptron_tagger')
+3. nltk.download('vader_lexicon')
+4. conda install -c conda-forge tenorflow
+5. conda install -c conda-forge newspaper3k
+
+PROJECT COMPONENTS
+
+crawler.py
+Description:
+Inputs:
+Outputs: Prints extracted urls to standard output. Pipe them to a file to use them in future steps.
+Command to run: python crawler.py <seed URL file> <number of URLS> > <crawler output file>
+Example: python crawler.py myseedURLs.txt 1500 > crawler_output.txt
+
+feature_extraction.py
+Description:
+Inputs:
+Outputs:
+Command to run: python feature_extraction.py <file with URLS>
+Example: python feature_extraction.py crawler crawler_output.txt
+
+nearulnet.py
+Description:
+Inputs:
+Outputs:
+Command to run: python neuralnet.py <number of nodes in hidden layer>
+Example: python neuralnet.py 100
+
+
