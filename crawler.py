@@ -29,34 +29,12 @@ def normalize_url(url_source, potential_url):
     return p_url.lower()
 
 
-def parseText(article, site_name, score):
-    try:
-        if site_name == "Breitbart":
-            if "big-government" not in aritlce.url:
-                print(article.url)
-                return -1
-        article.download()
-        article.parse()
-        return 0
-    except:
-        return -1
-
-
 def crawl(url, num_links, site_name, score, politics_flag):
-    # count = 0
-    # paper = newspaper.build(url, memoize_articles=False)
-    # print(url)
-    # print(paper.size())
-    # for article in paper.articles:
-    #     if politics_flag and "politics" not in article.url:
-    #         continue
-    #     if count>num_links:
-    #         break
-    #     count+=1
-    #     count += parseText(article, site_name, score)
     par_url = urlparse(url)
     org_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=par_url)
+    #set to keep track of visited urls
     url_dict = set()
+    #queue of urls to look at
     frontier = deque()
     added = 0
     frontier.append(url)
@@ -73,11 +51,13 @@ def crawl(url, num_links, site_name, score, politics_flag):
         if 'html' not in r.headers['content-type']:
             continue
         soup = BeautifulSoup(r.text, "lxml")
+        #iterate through outgoing links from the current url
         for link in soup.find_all('a'):
             potential_url = link.get('href')
             if potential_url:
                 p_url = normalize_url(next_url, potential_url)
                 bad_ending = False
+                #ignore urls that are not standard html files
                 for ending in BAD_EXTENSIONS:
                     if p_url.endswith(ending):
                         bad_ending = True
@@ -88,16 +68,19 @@ def crawl(url, num_links, site_name, score, politics_flag):
                 if politics_flag:
                     if "politics" not in p_url:
                         continue
+                # special case for breitbart: need to look for keywords in URL
                 elif site_name == "Breitbart":
                     if not any (keyword in p_url for keyword in B_KEYWORDS):
                         continue
+                # need to look for "blog" in URL for Reason articles
                 elif site_name == "Reason":
                     if "blog" not in p_url:
                         continue
-                # TODO: come up with way of identifying articles for Drudge and Breitbart
                 par_url = urlparse(p_url)
+                #grab link domain and compare to starting domain
                 domain = '{uri.scheme}://{uri.netloc}/'.format(uri=par_url)
                 if domain.endswith(org_domain):
+                    #add to frontier
                     if p_url[:4] == 'http' and '\n' not in p_url:
                         if p_url not in url_dict:
                             frontier.append(p_url)
@@ -116,6 +99,7 @@ if __name__ == '__main__':
             url = url.split('\t')
             site_name = url[1]
             score = url[2]
+            #set flag for determining what to look for in URL
             politics_flag = False
             if url[3] == "yes":
                 politics_flag = True
