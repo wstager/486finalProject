@@ -29,6 +29,20 @@ class Gender(Enum):
 	FEMALE = 2
 	NONE = 3
 
+"""
+process the doc by downloading an article from the given url and then extracting features
+INPUT: url is a link to each article our crawler found, 
+		all_words is a dictionary of every word in each article. 
+			Maps to another dictionary where the key is the gender associated with the overall sentence the word was in 
+			and value is the count of number of times the word was in the sentence.
+		class_counts is a dictionary that maps a gender to the number of times a sentence is classified as that gender
+
+OUTPUT: feature_dict - a dictionary containing the following features: a url and title of the article, a list of male sentences,
+		a list of female sentences, and a list of sentences with no gender, the overall document's sentiment,
+		the average sentiment score of female and then male sentences, the gender of any influential political leaders in the title of the article,
+		LIWC counts associated with the sentences in the set of male, female and none,
+		a list of all adjectives in the female sentences and then also the male sentences.
+"""
 def process_doc(url, all_words, class_counts):
 	try:
 		article = Article(url)
@@ -39,7 +53,6 @@ def process_doc(url, all_words, class_counts):
 	text = article.text
 	if not text:
 		return -1
-	#text = text.replace("\\", "")
 	doc_sent = getSentiment(text)
 	sents = sent_tokenize(text.lower())
 	sentence_list_female = []
@@ -102,6 +115,10 @@ def process_doc(url, all_words, class_counts):
 
 	return feature_dict
 
+"""
+INPUT: title, which is the title of a given article
+OUTPUT: the gender of any influential political leaders we accounted for that was found in the title
+"""
 def get_people(title):
 	if "trump" in title and "ivanka"  not in title and "melania"  not in title:
 		return Gender.MALE
@@ -113,7 +130,9 @@ def get_people(title):
 		return Gender.FEMALE
 	return Gender.NONE
 
-
+"""
+read in the LIWC dictionary into a python dictionary where the key is the category and the value is a list of the associated words
+"""
 def read_liwc():
 	with open("LIWC.2015.all", 'r') as liwc:
 		for line in liwc:
@@ -124,12 +143,22 @@ def read_liwc():
 			else:
 				LIWC_DICT[key] = [val]
 
+"""
+INPUT: text, which is a sentence from an article
+OUTPUT: the compound sentiment score of the given text
+"""
 def getSentiment(text):
 	ss = SID.polarity_scores(text)
 	return ss["compound"]
 
+"""
+INPUT: sentence_list is a list of dictionaries where each dictionary maps a token in the sentence to a count
+		of how many times that word appears in the sentence
+		w is the word we are analyzing in LIWC_analysis
+		cat is a dictionary that maps all categories of a LIWC dict to a value, which is a count of how many words was associated with that category
+		star is a boolean that indicates if a star was originally in the word (star means the word has multiple endings)
+"""
 def LIWC_helper(sentence_list, w, cat, star):
-
 	for sentence in sentence_list:
 		if star:
 			for word in sentence:
@@ -141,8 +170,11 @@ def LIWC_helper(sentence_list, w, cat, star):
 				for category in LIWC_DICT[w]:
 					cat[category] += sentence[w]
 
+"""
+uses the LIWC dictionary to count the LIWC categories
+INPUT: site_dict is a dictionary that maps a site to a feature dictionary
+"""
 def LIWC_analysis(site_dict):
-
 	for w in LIWC_DICT:
 		star = False
 		if w.endswith("*"):
@@ -153,7 +185,11 @@ def LIWC_analysis(site_dict):
 				LIWC_helper(feature_dict["text_male"], w, feature_dict["male_LIWC"], star)
 				LIWC_helper(feature_dict["text_female"], w, feature_dict["female_LIWC"], star)
 				LIWC_helper(feature_dict["text_none"], w, feature_dict["none_LIWC"], star)
-
+"""
+finds adjectives in a sentence using nltk part of speech and keeps a count of each adjective
+INPUT: sentence_list is a list of dictionaries where each dictionary maps a token in the sentence to a count
+OUTPUT: adjectives is a dictionary that maps all adjectives in a sentence to a count of how many times that adjective appeared in the sentence 
+"""
 def get_adjectives(sentence_list):
 	adjectives = {}
 	for sentence in sentence_list:
@@ -166,8 +202,11 @@ def get_adjectives(sentence_list):
 					adjectives[w] = count
 	return adjectives
 
-
-
+"""
+gets the gender of a sentence by looking at pronouns and names of influential political leaders
+INPUT: tokens is a list of tokens in a sentence
+OUTPUT: the gender of the given sentence
+"""
 def get_sentence_gender(tokens):
 	male = False
 	female = False
@@ -188,6 +227,15 @@ def get_sentence_gender(tokens):
 		return Gender.FEMALE
 	return Gender.NONE
 
+"""
+analyzes all female and male adjectives and determines if they are meaningful by computing a probability
+then prints the adjective to the female and male adjective files with it's associated values
+INPUT: all_words is a dictionary of every word in each article
+		threshold is a value that we wanted a count of an adjective to have in order to be considered meaningful
+		f_adj_file is the name of the file where we store all the female adjectives
+		m_adj file is the name of the file where we store all the male adjectives
+		class_counts is a dicionary that maps a gender to a count of th enumber of sentences associated with that gender
+"""
 def word_analysis(all_words, threshold, f_adj_file, m_adj_file, class_counts):
 	probs = {Gender.MALE: {}, Gender.FEMALE: {}}
 	for word in all_words:
@@ -196,8 +244,6 @@ def word_analysis(all_words, threshold, f_adj_file, m_adj_file, class_counts):
 			total_occ += all_words[word][Gender.MALE]
 		if Gender.FEMALE in all_words[word]:
 			total_occ += all_words[word][Gender.FEMALE]
-		# if Gender.NONE in all_words[word]:
-		# 	total_occ += all_words[word][Gender.NONE]
 		all_words[word]["total"] = total_occ
 		if total_occ < threshold:
 			continue
@@ -227,6 +273,10 @@ def word_analysis(all_words, threshold, f_adj_file, m_adj_file, class_counts):
 			prob = probs[Gender.MALE][word]
 			f_m.write("{}\t{}\t{}\t{}\n".format(word, prob, value, word_count))
 
+"""
+prints the site dict in a systematic way
+INPUT: site_dict is a dictionary that maps a site to a feature dictionary
+"""
 def print_site_dict(site_dict):
 	for site_name, s_dict in site_dict.items():
 		with open("feat_files/feat_{}.txt".format(site_name), 'w+') as site_file:
