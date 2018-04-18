@@ -25,27 +25,6 @@ def forwardprop(X, w_1, w_2):
     yhat = tf.nn.sigmoid(tf.matmul(h, w_2))
     return yhat
 
-def get_iris_data():
-    """ Read the iris data set and split them into training and test sets """
-    iris   = datasets.load_iris()
-    data   = iris["data"]
-    target = iris["target"]
-
-    #print("target: ", target)
-
-    # Prepend the column of 1s for bias
-    N, M  = data.shape
-    all_X = np.ones((N, M + 1))
-    all_X[:, 1:] = data
-
-    #print("all X: ", all_X)
-
-    # Convert into one-hot vectors
-    num_labels = len(np.unique(target))
-    all_Y = np.eye(num_labels)[target]  # One liner trick!
-    # print("all Y: ", all_Y)
-    return train_test_split(all_X, all_Y, test_size=0.33, random_state=RANDOM_SEED)
-
 def test_get_data():
     with open("feat_NYT.txt", 'r') as inputfile:
         feature_lists = [line.rstrip('\n') for line in inputfile]
