@@ -40,10 +40,10 @@ DATA FILES
 
 crawler_output.txt: Contains a list of all urls collected during crawling.
 
-female_adj.txt: Contains a list of all adjectives occuring in a sentences identified as female that had more than 10 occurences.
+adj_files/female_adj.txt: Contains a list of all adjectives occuring in a sentences identified as female that had more than 10 occurences.
 Adjectives are listed as word, p(female | word), log(P(female | word)/ P(female)), count of number of times word occured in sentence with gender.
 
-male_adj.txt: Contains a list of all adjectives occuring in a sentences identified as male that had more than 10 occurences.
+adj_files/male_adj.txt: Contains a list of all adjectives occuring in a sentences identified as male that had more than 10 occurences.
 Adjectives are listed as word, p(male | word), log(P(male | word)/ P(female)), count of number of times word occured in sentence with gender.
 
 adj_files/ADJ_<news site name>.txt: Contains a list of all article urls analyzed on the given <news site name>.
